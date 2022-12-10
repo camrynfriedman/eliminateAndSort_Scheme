@@ -7,15 +7,17 @@ both of which are lists of integers, and returns a list, L, that is sorted and
 has all the elements of L1 except those that are in L2.
 |#
 
- ; -------------------------------------------------
+
+;-------------------------------------
+;--------- REMOVE FUNCTIONS ---------
+;-------------------------------------
 
 #|
     PSEUDOCODE FOR CUT1:
     cut1[x, L]::
         [ null? [L] -> L;
         | =[x, car[L]] -> cut1[x, cdr[L]];
-        | #t -> cons[car[L], cut1[x, cdr[L]]];
-        ]
+        | #t -> cons[car[L], cut1[x, cdr[L]]];]
 |#
 ;Functionality: removes element x from L
 (define (cut1 x L)
@@ -30,8 +32,7 @@ has all the elements of L1 except those that are in L2.
     PSEUDOCODE FOR eliminate:
     eliminate[L1, L2]::
         [ null?[L2] -> L1
-        | #t -> eliminate[cut1[car[L2], L1];, cdr[L2]]
-        ]
+        | #t -> eliminate[cut1[car[L2], L1];, cdr[L2]]]
 |#
 ;Functionality: removes all elements of L1 that are in L2
 (define (eliminate L1 L2)
@@ -42,51 +43,65 @@ has all the elements of L1 except those that are in L2.
     )
 )
 
-#|
-    PSEUDOCODE FOR qkSort:
-    qkSort[L]::
-        [ <[length[L], 2] -> L;
-        | #t -> join[qkSort[lesser[car[L], cdr[L]]], car[L], qkSort[gEq[car[L], cdr[L]]]];
-        ]
- |#
- ; Functionality: Employs the quickSort algorithm on a list 
-(define (qkSort L)
-    (cond (<((listLength L) 2) L)
-        ;concatenates
-        (#t (join (qkSort <((car L) (cdr L))) (car L) (qkSort >=((car L) (cdr L)))))
-    )
-)
+;-------------------------------------
+;--------- SORTING FUNCTIONS ---------
+;-------------------------------------
 
 #|
-    PSEUDOCODE FOR listLength:
-    listLength[L]::
-        [ null?[L] -> 0
-        | #t -> +[1, length[cdr[L]]];
-        ]
+    PSEUDOCODE FOR selectionSort:
+    selectionSort::
+    [ null?[L] -> L
+    | #t -> cons[smallestElmt[L, car[L]], selectionSort[removeFirst[L, smallestElmt[L, car[L]]]]]
 |#
-; Functionality: helper function for qkSort. returns the length of the list.
-(define (listLength L)
-    (cond 
-        ((null? L) 0)
-        (#t (+ 1(length (cdr L))))
+; Functionality: sorts the given list L by finding the smallest element, moving it to the first position in the list, then finding the next smallest and moving it into the next position, etc.
+(define (selectionSort L)
+    (cond
+        ((null? L) L)
+        (#t (cons(smallestElmt L (car L)) (selectionSort (removeFirst L (smallestElmt L (car L)))))) ;puts smallest element at front of list and sorts the rest of the list without the current smallest element
     )
 )
 
- ; L is list of all elements of the given list that are less than x.
- ; x is first element of the given list
- ; M is the list of all elements of the given list that are greater than or equal to x.
-(define (join L x M)
-    ; if L1 is empty, return L2
-    (cond 
-        ((null? L) M)
-        (#t (cons(car L) (join (cdr L) M)))
+#|
+    PSEUDOCODE FOR smallestElmt:
+    smallestElmt[L, x]::
+        [ null?[L] -> x
+        | <[car[L], x] -> smallestElmt[cdr[L], car[L]]
+        | #t -> smallestElmt[cdr[L], x]]
+|#
+; Functionality: Returns the smallest element in the list, with x being the current smallest
+(define (smallestElmt L x)
+    (cond
+        ((null? L) x) ;if the list is empty, then the smallest element is the current smallest (x)
+        ((< (car L) x) (smallestElmt (cdr L) (car L))) ;if the first element of the list is less than the current smallest, recursively call smallestElmt on rest of the list (cdr L) and the new smallest aka the first element (car L)
+        (#t (smallestElmt (cdr L) x)) ;else, recursively call smallestElmt on the rest of the list (cdr L) with the same smallest element (x).
     )
 )
 
+#|
+    PSEUDOCODE FOR removeFirst:
+    removeFirst[L, x]::
+        [ null?[L] -> L
+        | =[car[L], x] -> cdr[L]
+        | #t -> cons[car[L], removeFirst[cdr[L], x]]]
+|#
+; Functionality: Returns a list with the the first occurrence of x removed from list L
+(define (removeFirst L x)
+    (cond
+        ((null? L) L) ;if the list is empty, return it
+        ((= (car L) x) (cdr L)) ;if the first element of L is x, remove it
+        (#t (cons (car L) (removeFirst (cdr L) x))) ;else, construct new list with the first element and the rest of L with x removed (hopefully)
+    )
+)
 
- ; MAIN FUNCTION
+;-------------------------------------
+;---------- MAIN FUNCTION ------------
+;-------------------------------------
+
+#|
+    PSEUDOCODE FOR eliminateNsort:
+    eliminateNsort::
+    [ selectionSort[eliminate[L1, L2]]]
+|#
 (define (eliminateNsort L1 L2)
-    ; body
-    ; look through L1 and get all the elements that are also in L2
-    ; 
-    )
+    (selectionSort (eliminate L1 L2))
+)
